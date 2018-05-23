@@ -1,94 +1,96 @@
-import time
 import pigpio
+from pwm_router import PwmRouter
+
+# config
+THROTTLE_GPIO_IN = 4
+THROTTLE_GPIO_OUT = 22
+STEERING_GPIO_IN  = 18
+STEERING_GPIO_OUT = 23
 
 class PwmMgr:
    """
    A class providing access to Raspberry Pi GPIO servo PWM routers via REST API 
    """
-   ROUTER_THROTTLE = 0
-   ROUTER_STEERING = 1
 
+   ROUTER_THROTTLE = 'throttle'
+   ROUTER_STEERING = 'steering'
+   
+   SOURCE_GPIO = 'gpio'
+   SOURCE_CPU = 'cpu'
+   
    def __init__(self):
-      self._pwm_reader = PwmReader(pi, gpio_in, 0, _cbf)
+      self._pi = pigpio.pi()
 
-      pi.set_mode(gpio_out, pigpio.OUTPUT)
-      pi.set_servo_pulsewidth(gpio_out, 0)
+      self.routers = [
+          {
+              'id': PwmMgr.ROUTER_THROTTLE,
+          },
+          {
+              'id': PwmMgr.ROUTER_STEERING,
+          }
+      ]
+      
+      self.throttle = PwmRouter(self._pi, THROTTLE_GPIO_IN, THROTTLE_GPIO_OUT)
+      self.set_pwm_source(self.throttle, PwmMgr.SOURCE_GPIO)
+      self.set_pulse_width(self.throttle, 1500)
 
-   def set_pwm_source(self, source):
+      self.steering = PwmRouter(self._pi, STEERING_GPIO_IN, STEERING_GPIO_OUT)
+      self.set_pwm_source(self.steering, PwmMgr.SOURCE_GPIO)
+      self.set_pulse_width(self.steering, 1500)
+
+   def set_pwm_source(self, router, source):
       """
       Set source for output PWM pulse width
       """
-      if source == PwmRouter.GPIO or source == PwmRouter.CPU:
-         self._source = source
-         return source
+      if router == self.throttle:
+         mgr_router = self.routers[0]
+      elif router == self.steering:
+         mgr_router = self.routers[1]
+
+      if source == PwmMgr.SOURCE_GPIO:
+         router.set_pwm_source(PwmRouter.SRC_GPIO)
+         mgr_router['source'] = source
+      elif source == PwmMgr.SOURCE_CPU:
+         router.set_pwm_source(PwmRouter.SRC_CPU)
+         mgr_router['source'] = source
       else:
          return -1
 
-   def set_pulse_width(self, pulse_width_us):
+   def get_pwm_source(self, router):
       """
-      Sets output pulse width. Only effective when source is CPU.
+      Returns current pwm source
       """
-      pulse_width_us = round(pulse_width_us)
-      if pulse_width_us >= 0 and pulse_width_us <= 2500
-         self._pulse_width_out_us = pulse_width_us
+      source = router.get_pwm_source()
 
-         if self._source = PwmRouter.CPU:
-            self._pi.set_servo_pulsewidth(self._gpio_out, pulse_width_us)
-
-         return pulse_width_us
+      if source == PwmRouter.GPIO:
+         return PwmMgr.SOURCE_GPIO
+      elif source == PwmRouter.CPU:
+         return PwmMgr.SOURCE_CPU
       else:
          return -1
 
-   def set_pulse_width(self, pulse_width_us):
+   def set_pulse_width(self, router, pulse_width_us):
       """
-      Sets output pulse width. Only effective when source is CPU.
+      Sets output pulse width. 
       """
-      pulse_width_us = round(pulse_width_us)
-      if pulse_width_us >= 0 and pulse_width_us <= 2500
-         self._pulse_width_out_us = pulse_width_us
+      router.set_pulse_width(pulse_width_us)
+      
+      if router == self.throttle:
+          self.routers[0]['pulse_width_usec'] = pulse_width_us
+      elif router == self.steering:
+          self.routers[1]['pulse_width_usec'] = pulse_width_us
 
-         if self._source = PwmRouter.CPU:
-            self._pi.set_servo_pulsewidth(self._gpio_out, pulse_width_us)
+      return pulse_width_us
 
-         return pulse_width_us
-      else:
-         return -1
+   def get_pulse_width_out(self, router):
+      """
+      Returns current output pulse width.
+      """
+      return router.get_pulse_width_out()
 
-if __name__ == "__main__":
-
-   import time
-   import pigpio
-   import read_PWM
-
-   PWM_GPIO = 4
-   RUN_TIME = 600000.0
-   SAMPLE_TIME = 1 
-
-   SERVO_GPIO = 22
-
-   pi = pigpio.pi()
-
-   p = read_PWM.reader(pi, PWM_GPIO)
-
-   pi.set_PWM_range(PWM_GPIO, 1023)
-   #pi.set_PWM_range(PWMC_GPIO, 1023)
-
-   start = time.time()
-
-   while (time.time() - start) < RUN_TIME:
-
-      #time.sleep(SAMPLE_TIME)
-
-      f = p.frequency()
-      pw = p.pulse_width()
-      dc = p.duty_cycle()
-     
-      #print("f={:.1f} pw={} dc={:.2f}".format(f, int(pw+0.5), dc))
-
-      #pi.set_PWM_dutycycle(PWMC_GPIO, dc*1023/100)
-      pi.set_servo_pulsewidth(SERVO_GPIO, pw)
-
-   p.cancel()
-
-   pi.stop()
+   def get_pulse_width_in(self, router):
+      """
+      Returns current input pulse width.
+      """
+      return router.get_pulse_width_in()
 
