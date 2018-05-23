@@ -92,13 +92,13 @@ def get_pulse_width_out(router_id):
         abort(404)
     return str(router[0]['pulse_width_usec'])
 
-@app.route('/pwmmgr/api/v1/routers/<string:router_id>/pulse_width_usec', methods = ['PUT'])
+@app.route('/pwmmgr/api/v1/routers/<string:router_id>/pulse_width_out', methods = ['PUT'])
 def update_pulse_width(router_id):
     router = [router for router in pwm_mgr.routers if router['id'] == router_id]
     if len(router) == 0:
         abort(404)
-    if 'pulse_width_usec' in request.args:
-        pw = request.args['pulse_width_usec']
+    if 'pulse_width' in request.args:
+        pw = request.args['pulse_width']
         if RepresentsInt(pw):
             pulse_width_usec = int(pw)
         else:
@@ -123,7 +123,7 @@ def get_pulse_width_in(router_id):
     if router_id == PwmMgr.ROUTER_THROTTLE:
         pw = pwm_mgr.get_pulse_width_in(pwm_mgr.throttle)
     elif router_id == PwmMgr.ROUTER_STEERING:
-        pw = pwm_mgr.get_pulse_width(pwm_mgr.steering)
+        pw = pwm_mgr.get_pulse_width_in(pwm_mgr.steering)
 
     return str(pw)
 
