@@ -7,6 +7,9 @@ THROTTLE_GPIO_OUT = 22
 STEERING_GPIO_IN  = 18
 STEERING_GPIO_OUT = 23
 
+# IP address where pigpiod is exposed
+IP_PIGPIOD = '172.17.0.1'  # docker host
+
 class PwmMgr:
    """
    A class providing access to Raspberry Pi GPIO servo PWM routers via REST API 
@@ -19,7 +22,7 @@ class PwmMgr:
    SOURCE_CPU = 'cpu'
    
    def __init__(self):
-      self._pi = pigpio.pi()
+      self._pi = pigpio.pi(IP_PIGPIOD)
 
       self.routers = [
           {
