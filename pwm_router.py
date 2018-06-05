@@ -21,18 +21,18 @@ class PwmRouter:
       self._source = PwmRouter.SRC_GPIO
       self._pulse_width_in_us = 1500
       self._pulse_width_out_us = 1500
-      self._pwm_reader = PwmReader(pi, gpio_in, 0, self._cbf)
+      self._pwm_reader = PwmReader(pi, gpio_in, 0, self)
 
       pi.set_mode(gpio_out, pigpio.OUTPUT)
       pi.set_servo_pulsewidth(gpio_out, 0)
 
-   def _cbf(self, pulse_width_us):
+   def cbf(self, pulse_width_us):
       """
       Callback function called with the GPIO input pulse width changes.
       """
-      self._pulse_width_in_us = pulse_width_in_us
+      self._pulse_width_in_us = pulse_width_us
 
-      if self._source == PwmRouter.GPIO:
+      if self._source == PwmRouter.SRC_GPIO:
          self._pulse_width_out_us = pulse_width_us
          self._pi.set_servo_pulsewidth(self._gpio_out, pulse_width_us)
 

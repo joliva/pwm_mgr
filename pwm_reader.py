@@ -7,7 +7,7 @@ class PwmReader:
    happens per second.  The duty cycle is the percentage of
    pulse high time per cycle.
    """
-   def __init__(self, pi, gpio, weighting=0.0, callback=None):
+   def __init__(self, pi, gpio, weighting=0.0, callback_obj=None):
       """
       Instantiate with the Pi and gpio of the PWM signal
       to monitor.
@@ -23,8 +23,7 @@ class PwmReader:
       """
       self.pi = pi
       self.gpio = gpio
-      self.callback = callback
-
+      self.callback_obj = callback_obj
       if weighting < 0.0:
          weighting = 0.0
       elif weighting > 0.99:
@@ -68,8 +67,8 @@ class PwmReader:
 
             if self._high != self._high_prev:
                 self._high_prev = self._high
-                if callback:
-                    callback(self._high)
+                if self.callback_obj:
+                    self.callback_obj.cbf(self._high)
 
    def frequency(self):
       """
