@@ -128,6 +128,6 @@ def get_pulse_width_in(router_id):
     return str(pw)
 
 if __name__ == '__main__':
-    app.run(debug = True, host='0.0.0.0')
-    #app.run(host='0.0.0.0')
+    #app.run(debug = True, host='0.0.0.0')
+    app.run(host='0.0.0.0')
 
