@@ -7,6 +7,10 @@ class PwmReader:
    happens per second.  The duty cycle is the percentage of
    pulse high time per cycle.
    """
+
+   # class variables
+   gpio_to_obj = {} 	# GPIO to PwmReader object map
+
    def __init__(self, pi, gpio, weighting=0.0, callback_obj=None):
       """
       Instantiate with the Pi and gpio of the PWM signal
@@ -36,10 +40,20 @@ class PwmReader:
       self._period = None
       self._high = None
       self._high_prev = None
+      self._refresh_cnt = 0
 
       pi.set_mode(gpio, pigpio.INPUT)
 
-      self._cb = pi.callback(gpio, pigpio.EITHER_EDGE, self._cbf)
+      # add object to gpio_to_obj map if new gpio 
+      if gpio not in PwmReader.gpio_to_obj:
+          PwmReader.gpio_to_obj[gpio] = self
+
+      self._cb = pi.callback(gpio, pigpio.EITHER_EDGE, PwmReader._cb_redirect)
+
+   @classmethod
+   def _cb_redirect(cls, gpio, level, tick):
+      if gpio in PwmReader.gpio_to_obj:
+          PwmReader.gpio_to_obj[gpio]._cbf(gpio, level, tick)
 
    def _cbf(self, gpio, level, tick):
 
