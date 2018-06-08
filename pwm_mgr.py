@@ -2,7 +2,7 @@ import pigpio
 from pwm_router import PwmRouter
 
 # config
-THROTTLE_GPIO_IN = 4
+THROTTLE_GPIO_IN = 17
 THROTTLE_GPIO_OUT = 22
 STEERING_GPIO_IN  = 18
 STEERING_GPIO_OUT = 23
