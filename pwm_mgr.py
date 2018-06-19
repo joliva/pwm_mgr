@@ -1,11 +1,21 @@
+import json
+import os.path
 import pigpio
 from pwm_router import PwmRouter
 
-# config
-THROTTLE_GPIO_IN = 17
-THROTTLE_GPIO_OUT = 22
-STEERING_GPIO_IN  = 18
-STEERING_GPIO_OUT = 23
+CFG_FILE = '/root/config/pwmmgr.conf'
+
+conf = {}
+if not os.path.isfile(CFG_FILE):
+    # Create dummy configuration file
+    conf['throttle'] = {'gpio_in':17, 'gpio_out':22}
+    conf['steering'] = {'gpio_in':18, 'gpio_out':23}
+    confs = json.dumps(conf)
+
+    with open(CFG_FILE, 'w') as f: f.write(confs)
+
+with open(CFG_FILE) as f:
+    conf = json.loads(f.read())
 
 # IP address where pigpiod is exposed
 IP_PIGPIOD = '172.17.0.1'  # docker host
@@ -33,11 +43,11 @@ class PwmMgr:
           }
       ]
       
-      self.throttle = PwmRouter(self._pi, THROTTLE_GPIO_IN, THROTTLE_GPIO_OUT)
+      self.throttle = PwmRouter(self._pi, conf['throttle']['gpio_in'], conf['throttle']['gpio_out'])
       self.set_pwm_source(self.throttle, PwmMgr.SOURCE_GPIO)
       self.set_pulse_width(self.throttle, 1500)
 
-      self.steering = PwmRouter(self._pi, STEERING_GPIO_IN, STEERING_GPIO_OUT)
+      self.steering = PwmRouter(self._pi, conf['steering']['gpio_in'], conf['steering']['gpio_out'])
       self.set_pwm_source(self.steering, PwmMgr.SOURCE_GPIO)
       self.set_pulse_width(self.steering, 1500)
 
