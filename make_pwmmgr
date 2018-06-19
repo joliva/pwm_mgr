@@ -1,1 +1,1 @@
-docker build -t pwmmgr .
+docker build -t joliva/pwm_mgr:latest .
